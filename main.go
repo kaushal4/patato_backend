@@ -10,12 +10,19 @@ import (
 )
 
 func getPersons(c *gin.Context) {
-    con := db.Connect()
+    con,err := db.Connect()
+    if err != nil{
+        fmt.Println(err)
+        c.JSON(http.StatusInternalServerError,gin.H{"error":"true"})
+        return;
+    }
     defer con.Close()
     query := fmt.Sprintf(`Select * from persons limit 5`)
     rows,err := con.Queryx(query)
     if err!=nil{
         fmt.Printf("query failed!")
+        c.JSON(http.StatusInternalServerError,gin.H{"error":"true"})
+        return;
     }
     defer rows.Close()
     results := make([]schema.Persons,0,6)
