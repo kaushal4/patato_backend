@@ -21,6 +21,16 @@ create table users (
     password varchar not null,
     primary key (id)
 );
+
+create table listings (
+    id uuid default uuid_generate_v4 (),
+    item text not null,
+    freshness text not null,
+    photo text,
+    userId uuid not null,
+    primary key(id),
+    constraint fk_users foreign key(userId) references users(id) on delete cascade
+);
 `
 
 type User struct{
