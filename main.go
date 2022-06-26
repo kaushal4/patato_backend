@@ -14,6 +14,7 @@ func main() {
     {
         userRoutes.POST("/",user.SignUp)
         userRoutes.POST("/login",user.Login)
+        userRoutes.POST("/location",user.CheckToken,user.Location)
         userRoutes.GET("/test",user.CheckToken,user.MiddlewareTest)
         userRoutes.GET("/refresh",user.CheckToken,user.RefreshToken)
 

@@ -26,7 +26,7 @@ type User struct{
 
 func SignUp(c *gin.Context){
     var user User
-    err := c.Bind(&user)
+    err := c.BindJSON(&user)
     if utils.CheckError(err,http.StatusInternalServerError,c){
         return
     }
@@ -34,6 +34,7 @@ func SignUp(c *gin.Context){
     if utils.CheckError(err,http.StatusInternalServerError,c){
         return
     }
+    defer con.Close()
     hashedPassword,err := bcrypt.GenerateFromPassword([]byte(user.Password),8)
     if utils.CheckError(err,http.StatusInternalServerError,c){
         return
@@ -58,7 +59,7 @@ type Claims struct {
 func Login(c *gin.Context){
     var user User
     var dbUser db.User
-    err := c.Bind(&user)
+    err := c.BindJSON(&user)
     if utils.CheckError(err,http.StatusInternalServerError,c){
         return
     }
@@ -66,6 +67,7 @@ func Login(c *gin.Context){
     if utils.CheckError(err,http.StatusInternalServerError,c){
         return
     }
+    defer con.Close()
     fmt.Println(user.Email)
     err = con.Get(&dbUser,`select * from users where email=$1`,user.Email)
     if utils.CheckError(err,http.StatusInternalServerError,c){
@@ -131,7 +133,7 @@ func checkClaims(c* gin.Context) (Claims,error) {
     var isPresent bool
     if claims,isPresent = c.Get("claims");!isPresent{
         c.Status(http.StatusUnauthorized)
-        return Claims{},errors.New("No Claims")
+        return Claims{},errors.New("No Claims, did you forget to add the middleware?")
     }
     _,ok := claims.(Claims)
     if !ok{
@@ -164,4 +166,31 @@ func RefreshToken(c * gin.Context){
     }
     c.SetCookie("token",tokenString,int(5*60*60),"/","localhost",false,false)
     c.JSON(http.StatusAccepted,gin.H{"status":"Refreshed","token":tokenString})
+}
+
+type location struct{
+    Latitude float64 `json:"latitude"`
+    Longitude float64 `json:"longitude"`
+}
+
+func Location(c * gin.Context){
+    claims,err := checkClaims(c)
+    if utils.CheckError(err,http.StatusBadRequest,c){
+        return
+    }
+    var loc location
+    if err := c.ShouldBindJSON(&loc);err != nil{
+        c.Status(http.StatusBadRequest)
+        return
+    }
+    con,err := db.Connect()
+    if utils.CheckError(err,http.StatusInternalServerError,c){
+        return
+    }
+    defer con.Close()
+    _ ,err = con.Exec(`update users set longitude=$1,latitude=$2 where id=$3`,loc.Longitude,loc.Latitude,claims.Id)
+    if utils.CheckError(err,http.StatusInternalServerError,c) {
+        return
+    }
+    c.JSON(http.StatusAccepted,gin.H{"update":"successfull"})
 }
