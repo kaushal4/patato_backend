@@ -13,8 +13,10 @@ func main() {
     userRoutes := router.Group("/user")
     {
         userRoutes.POST("/",user.SignUp)
+        userRoutes.GET("/",user.CheckToken,user.GetUser)
         userRoutes.POST("/login",user.Login)
         userRoutes.POST("/location",user.CheckToken,user.Location)
+        userRoutes.POST("/intrest",user.CheckToken,user.Intrests)
         userRoutes.GET("/test",user.CheckToken,user.MiddlewareTest)
         userRoutes.GET("/refresh",user.CheckToken,user.RefreshToken)
 

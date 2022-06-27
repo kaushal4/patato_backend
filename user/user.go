@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -73,6 +74,7 @@ func Login(c *gin.Context){
     if utils.CheckError(err,http.StatusInternalServerError,c){
         return
     }
+    fmt.Println(dbUser.Intrests)
     err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password),[]byte(user.Password))
     if utils.CheckError(err,http.StatusUnauthorized,c){
         return
@@ -193,4 +195,49 @@ func Location(c * gin.Context){
         return
     }
     c.JSON(http.StatusAccepted,gin.H{"update":"successfull"})
+}
+
+type intrest struct{
+    Intrest string `json:"intrest"`
+}
+
+func Intrests(c * gin.Context){
+    claims,err := checkClaims(c)
+    if utils.CheckError(err,http.StatusBadRequest,c){
+        return
+    }
+    var userIntrest intrest
+    if err := c.ShouldBindJSON(&userIntrest);err != nil{
+        fmt.Println(err)
+        c.Status(http.StatusBadRequest)
+        return
+    }
+    con,err := db.Connect()
+    if utils.CheckError(err,http.StatusInternalServerError,c){
+        return
+    }
+    defer con.Close()
+    _ ,err = con.Exec(`update users set intrests = intrests || $1  where id=$2`,pq.Array([]string{userIntrest.Intrest}),claims.Id)
+    if utils.CheckError(err,http.StatusInternalServerError,c) {
+        return
+    }
+    c.JSON(http.StatusAccepted,gin.H{"update":"successfull"})
+}
+
+func GetUser(c * gin.Context){
+    claims,err := checkClaims(c)
+    if utils.CheckError(err,http.StatusBadRequest,c){
+        return
+    }
+    var dbUser db.User
+    con,err := db.Connect()
+    if utils.CheckError(err,http.StatusInternalServerError,c){
+        return
+    }
+    defer con.Close()
+    err = con.Get(&dbUser,"select * from users where id=$1",claims.Id)
+    if utils.CheckError(err,http.StatusInternalServerError,c) {
+        return
+    }
+    c.JSON(http.StatusOK,dbUser)
 }

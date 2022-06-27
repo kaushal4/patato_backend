@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
-
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 var schema string = `
@@ -19,6 +18,7 @@ create table users (
     longitude double precision,
     latitude double precision,
     password varchar not null,
+    intrests text[],
     primary key (id)
 );
 
@@ -40,6 +40,7 @@ type User struct{
     Email string `db:"email"`
     Longitude sql.NullFloat64 `db:"longitude"`
     Latitude sql.NullFloat64 `db:"latitude"`
+    Intrests pq.StringArray `db:"intrests"`
     Password string `json:"password" form:"password" db:"password"`
 }
 
