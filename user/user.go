@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"potato/backend/db"
-	"potato/backend/utils"
+    "potato/backend/utils"
 	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/lib/pq"
@@ -130,7 +129,7 @@ func CheckToken(c *gin.Context){
     c.Next()
 }
 
-func checkClaims(c* gin.Context) (Claims,error) {
+func CheckClaims(c* gin.Context) (Claims,error) {
     var claims any
     var isPresent bool
     if claims,isPresent = c.Get("claims");!isPresent{
@@ -146,7 +145,7 @@ func checkClaims(c* gin.Context) (Claims,error) {
 }
 
 func MiddlewareTest(c * gin.Context){
-    claims,err := checkClaims(c)
+    claims,err := CheckClaims(c)
     if utils.CheckError(err,http.StatusInternalServerError,c){
         return
     }
@@ -154,7 +153,7 @@ func MiddlewareTest(c * gin.Context){
 }
 
 func RefreshToken(c * gin.Context){
-    claims,err := checkClaims(c)
+    claims,err := CheckClaims(c)
     if utils.CheckError(err,http.StatusInternalServerError,c){
         return
     }
@@ -176,7 +175,7 @@ type location struct{
 }
 
 func Location(c * gin.Context){
-    claims,err := checkClaims(c)
+    claims,err := CheckClaims(c)
     if utils.CheckError(err,http.StatusBadRequest,c){
         return
     }
@@ -202,7 +201,7 @@ type intrest struct{
 }
 
 func Intrests(c * gin.Context){
-    claims,err := checkClaims(c)
+    claims,err := CheckClaims(c)
     if utils.CheckError(err,http.StatusBadRequest,c){
         return
     }
@@ -225,7 +224,7 @@ func Intrests(c * gin.Context){
 }
 
 func GetUser(c * gin.Context){
-    claims,err := checkClaims(c)
+    claims,err := CheckClaims(c)
     if utils.CheckError(err,http.StatusBadRequest,c){
         return
     }
