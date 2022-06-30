@@ -32,6 +32,26 @@ create table listings (
     primary key(id),
     constraint fk_users foreign key(userId) references users(id) on delete cascade
 );
+
+
+create table transactions(
+    id uuid default uuid_generate_v4 (),
+    itemid uuid not null,
+    userid uuid not null,
+    status text not null,
+    datetime timestamp,
+    constraint fk_listings foreign key(itemid) references listings(id),
+    constraint fk_users foreign key(userid) references users(id),
+    primary key(id)
+    )
+
+
+create table messages(
+    transactionid uuid,
+    message text,
+    datetime timestamp,
+    constraint fk_listings foreign key(transactionid) references transactions(id)
+    )
 `
 
 type User struct {
@@ -43,6 +63,21 @@ type User struct {
 	Latitude  sql.NullFloat64 `db:"latitude"`
 	Intrests  pq.StringArray  `db:"intrests"`
 	Password  string          `json:"password" form:"password" db:"password"`
+}
+
+type Transactions struct {
+    Id []byte `db:"id"`
+    ItemId string `db:"itemId"`
+    UserId string `db:"userId"`
+    status string `db:"status"`
+    DateTime sql.NullTime `db:"datetime"`
+}
+
+
+type Messages struct {
+    TransactionId []byte `db:"id"`
+    Message string `db:"message"`
+    DateTime sql.NullTime `db:"datetime"`
 }
 
 var password string
