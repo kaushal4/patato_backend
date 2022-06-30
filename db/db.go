@@ -36,22 +36,22 @@ create table listings (
 
 create table transactions(
     id uuid default uuid_generate_v4 (),
-    itemid uuid not null,
-    userid uuid not null,
+    itemId uuid not null,
+    userId uuid not null,
     status text not null,
     datetime timestamp,
     constraint fk_listings foreign key(itemid) references listings(id),
     constraint fk_users foreign key(userid) references users(id),
     primary key(id)
-    )
+    );
 
 
 create table messages(
-    transactionid uuid,
+    transactionId uuid,
     message text,
     datetime timestamp,
     constraint fk_listings foreign key(transactionid) references transactions(id)
-    )
+    );
 `
 
 type User struct {
@@ -75,7 +75,7 @@ type Transactions struct {
 
 
 type Messages struct {
-    TransactionId []byte `db:"id"`
+    TransactionId []byte `db:"TransactionId"`
     Message string `db:"message"`
     DateTime sql.NullTime `db:"datetime"`
 }
